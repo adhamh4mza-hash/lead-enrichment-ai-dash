@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart3, Clock, DollarSign, Zap, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { BarChart3, Clock, DollarSign, Zap, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
 interface RunHistory {
@@ -21,6 +22,7 @@ export function Dashboard() {
   });
   const [runHistory, setRunHistory] = useState<RunHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch data for 'mateusz' client from Supabase
   const fetchClientMetrics = useCallback(async () => {
@@ -101,6 +103,16 @@ export function Dashboard() {
     };
   }, [fetchRunHistory, fetchClientMetrics]);
 
+  // Manual refresh function
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([fetchClientMetrics(), fetchRunHistory()]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchClientMetrics, fetchRunHistory]);
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -115,12 +127,26 @@ export function Dashboard() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, runId: string) => {
     const variants = {
       completed: 'bg-success/20 text-success-foreground border-success/20',
       processing: 'bg-warning/20 text-warning-foreground border-warning/20',
       failed: 'bg-destructive/20 text-destructive-foreground border-destructive/20'
     };
+    
+    // Special case for "check instantly campaign" - make it a clickable link
+    if (status.toLowerCase() === 'check instantly campaign') {
+      return (
+        <a
+          href={`https://app.instantly.ai/app/campaign/${runId}/leads`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary-foreground border border-primary/20 hover:bg-primary/30 transition-colors cursor-pointer"
+        >
+          Check Instantly Campaign
+        </a>
+      );
+    }
     
     return (
       <Badge className={variants[status as keyof typeof variants]}>
@@ -163,6 +189,16 @@ export function Dashboard() {
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Analytics Dashboard</h1>
               <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track your AI-powered growth acceleration</p>
             </div>
+            <Button 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
           </div>
         </div>
 
@@ -248,7 +284,7 @@ export function Dashboard() {
                   </div>
                   
                   <div className="flex items-center gap-3 self-start sm:self-center">
-                    {getStatusBadge(run.status)}
+                    {getStatusBadge(run.status, run.run_id)}
                   </div>
                 </div>
               ))}
