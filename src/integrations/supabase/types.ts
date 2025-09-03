@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       "AGA Runs progress": {
         Row: {
+          campaign_name: string | null
           created_at: string
           lead_count: number | null
           run_id: string
@@ -24,6 +25,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          campaign_name?: string | null
           created_at?: string
           lead_count?: number | null
           run_id?: string
@@ -32,27 +34,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          campaign_name?: string | null
           created_at?: string
           lead_count?: number | null
           run_id?: string
           source?: string | null
           status?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      "AGA Runs Progress": {
-        Row: {
-          created_at: string
-          id: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
         }
         Relationships: []
       }

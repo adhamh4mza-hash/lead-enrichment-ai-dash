@@ -20,6 +20,7 @@ interface FormData {
   };
   campaignId: string;
   email: string;
+  campaignName: string;
 }
 
 interface LeadEnrichmentFormProps {
@@ -38,6 +39,7 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
     },
     campaignId: '',
     email: '',
+    campaignName: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -58,7 +60,8 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
         .insert({
           status: 'Processing Leads',
           lead_count: formData.leadSource === 'apollo' ? formData.leadCount : null,
-          source: formData.leadSource === 'apollo' ? 'Apollo URL' : 'CSV Upload'
+          source: formData.leadSource === 'apollo' ? 'Apollo URL' : 'CSV Upload',
+          campaign_name: formData.campaignName
         })
         .select()
         .single();
@@ -72,6 +75,7 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
       
       submissionData.append('leadSource', formData.leadSource);
       submissionData.append('run_id', runData.run_id); // Add run_id to webhook payload
+      submissionData.append('campaignName', formData.campaignName);
       
       if (formData.leadSource === 'apollo') {
         submissionData.append('apolloUrl', formData.apolloUrl);
@@ -125,6 +129,7 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
   };
 
   const isFormValid = () => {
+    if (!formData.campaignName) return false;
     if (!formData.leadSource) return false;
     if (formData.leadSource === 'apollo' && !formData.apolloUrl) return false;
     if (formData.leadSource === 'csv' && !formData.csvFile) return false;
@@ -164,6 +169,21 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Campaign Name */}
+            <div className="space-y-3">
+              <Label htmlFor="campaignName" className="text-foreground font-medium">
+                Campaign Name
+              </Label>
+              <Input
+                id="campaignName"
+                type="text"
+                placeholder="Enter campaign name"
+                value={formData.campaignName}
+                onChange={(e) => setFormData(prev => ({ ...prev, campaignName: e.target.value }))}
+                className="bg-input border-border"
+              />
+            </div>
+
             {/* Lead Source Selection */}
             <div className="space-y-3">
               <Label htmlFor="leadSource" className="text-foreground font-medium">

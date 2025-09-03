@@ -4,19 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
-interface DashboardProps {
-  submissionData?: any;
-}
-
 interface RunHistory {
   run_id: string;
   status: string;
   created_at: string;
   lead_count: number | null;
   source: string;
+  campaign_name: string | null;
 }
 
-export function Dashboard({ submissionData }: DashboardProps) {
+export function Dashboard() {
   const [stats, setStats] = useState({
     totalMessages: 0,
     hoursSaved: 0,
@@ -103,13 +100,6 @@ export function Dashboard({ submissionData }: DashboardProps) {
     };
   }, []);
 
-  useEffect(() => {
-    if (submissionData) {
-      // Just refresh the run history to show the new run
-      fetchRunHistory();
-      fetchClientMetrics();
-    }
-  }, [submissionData]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -243,10 +233,12 @@ export function Dashboard({ submissionData }: DashboardProps) {
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className="font-medium text-foreground text-sm sm:text-base">
-                          {run.lead_count ? run.lead_count.toLocaleString() : '0'} leads
+                          {run.campaign_name || 'Unnamed Campaign'}
                         </span>
                         <span className="text-muted-foreground">•</span>
-                        <span className="text-xs sm:text-sm text-muted-foreground">{run.source}</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">
+                          {run.lead_count ? run.lead_count.toLocaleString() : '0'} leads
+                        </span>
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {formatTimeAgo(new Date(run.created_at))}
