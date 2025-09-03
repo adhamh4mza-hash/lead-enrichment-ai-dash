@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BarChart3, Clock, DollarSign, Zap, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardProps {
   submissionData?: any;
@@ -17,11 +18,12 @@ interface RunHistory {
 
 export function Dashboard({ submissionData }: DashboardProps) {
   const [stats, setStats] = useState({
-    totalMessages: 12847,
-    hoursSaved: 384,
-    moneySaved: 19234,
+    totalMessages: 0,
+    hoursSaved: 0,
+    moneySaved: 0,
   });
-
+  const [loading, setLoading] = useState(true);
+  
   const [runHistory, setRunHistory] = useState<RunHistory[]>([
     {
       id: '1',
@@ -53,6 +55,59 @@ export function Dashboard({ submissionData }: DashboardProps) {
     }
   ]);
 
+  // Fetch data for 'mateusz' client from Supabase
+  const fetchClientMetrics = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('Client Metrics')
+        .select('*')
+        .eq('client_name', 'mateusz')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching client metrics:', error);
+        return;
+      }
+
+      if (data) {
+        setStats({
+          totalMessages: data.num_personalized_leads || 0,
+          hoursSaved: data.hours_saved || 0,
+          moneySaved: data.money_saved || 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update metrics in database
+  const updateClientMetrics = async (newStats: typeof stats) => {
+    try {
+      const { error } = await supabase
+        .from('Client Metrics')
+        .upsert({
+          client_name: 'mateusz',
+          num_personalized_leads: newStats.totalMessages,
+          hours_saved: newStats.hoursSaved,
+          money_saved: newStats.moneySaved,
+        });
+
+      if (error) {
+        console.error('Error updating client metrics:', error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientMetrics();
+  }, []);
+
   useEffect(() => {
     if (submissionData) {
       // Add new run to history
@@ -66,14 +121,17 @@ export function Dashboard({ submissionData }: DashboardProps) {
       
       setRunHistory(prev => [newRun, ...prev]);
       
-      // Update stats (simulate incremental growth)
-      setStats(prev => ({
-        totalMessages: prev.totalMessages + (submissionData.leadCount || 0),
-        hoursSaved: prev.hoursSaved + Math.floor((submissionData.leadCount || 0) / 10),
-        moneySaved: prev.moneySaved + Math.floor((submissionData.leadCount || 0) * 2.5)
-      }));
+      // Update stats and save to database
+      const newStats = {
+        totalMessages: stats.totalMessages + (submissionData.leadCount || 0),
+        hoursSaved: stats.hoursSaved + Math.floor((submissionData.leadCount || 0) / 10),
+        moneySaved: stats.moneySaved + Math.floor((submissionData.leadCount || 0) * 2.5)
+      };
+      
+      setStats(newStats);
+      updateClientMetrics(newStats);
     }
-  }, [submissionData]);
+  }, [submissionData, stats.totalMessages, stats.hoursSaved, stats.moneySaved]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
