@@ -116,70 +116,70 @@ export function Dashboard({ submissionData }: DashboardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
               <p 
                 className="framer-text mb-2" 
                 style={{
                   fontFamily: '"Clash Display", "Clash Display Placeholder", sans-serif',
-                  fontSize: '24px',
+                  fontSize: 'clamp(20px, 4vw, 24px)',
                   fontWeight: 700,
                   color: 'var(--extracted-r6o4lv, rgb(171, 82, 197))'
                 }}
               >
                 13 AI
               </p>
-              <h1 className="text-3xl font-bold text-foreground">Analytics Dashboard</h1>
-              <p className="text-muted-foreground mt-1">Track your AI-powered growth acceleration</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Analytics Dashboard</h1>
+              <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track your AI-powered growth acceleration</p>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-surface border-border shadow-card">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          <Card className="bg-gradient-surface border-border shadow-card metric-card-hover">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Total Personalized Messages
               </CardTitle>
               <Zap className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats.totalMessages.toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">{stats.totalMessages.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
                 Generated across all campaigns
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-surface border-border shadow-card">
+          <Card className="bg-gradient-surface border-border shadow-card metric-card-hover">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Hours Saved
               </CardTitle>
               <Clock className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats.hoursSaved.toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">{stats.hoursSaved.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
                 Using AGA vs manual outreach
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-surface border-border shadow-card">
+          <Card className="bg-gradient-surface border-border shadow-card metric-card-hover sm:col-span-2 lg:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Money Saved
               </CardTitle>
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">${stats.moneySaved.toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">${stats.moneySaved.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
                 Estimated cost savings
               </p>
@@ -196,29 +196,29 @@ export function Dashboard({ submissionData }: DashboardProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {runHistory.map((run) => (
                 <div 
                   key={run.id} 
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg bg-muted/30 border border-border/50 gap-3 sm:gap-4"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {getStatusIcon(run.status)}
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-foreground">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-medium text-foreground text-sm sm:text-base">
                           {run.leadCount.toLocaleString()} leads
                         </span>
                         <span className="text-muted-foreground">•</span>
-                        <span className="text-sm text-muted-foreground">{run.source}</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">{run.source}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         {formatTimeAgo(run.timestamp)}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 self-start sm:self-center">
                     {getStatusBadge(run.status)}
                   </div>
                 </div>

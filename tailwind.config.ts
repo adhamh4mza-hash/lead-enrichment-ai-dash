@@ -64,12 +64,15 @@ export default {
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-surface': 'var(--gradient-surface)',
-				'gradient-border': 'var(--gradient-border)'
+				'gradient-border': 'var(--gradient-border)',
+				'futuristic': 'var(--bg-futuristic)',
+				'blur-overlay': 'var(--bg-blur-overlay)'
 			},
 			boxShadow: {
 				'glow': 'var(--shadow-glow)',
 				'card': 'var(--shadow-card)',
-				'elevated': 'var(--shadow-elevated)'
+				'elevated': 'var(--shadow-elevated)',
+				'hover-glow': 'var(--shadow-hover-glow)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
