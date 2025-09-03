@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BarChart3, Clock, DollarSign, Zap, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   // Fetch data for 'mateusz' client from Supabase
-  const fetchClientMetrics = async () => {
+  const fetchClientMetrics = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('Client Metrics')
@@ -46,10 +46,10 @@ export function Dashboard() {
     } catch (error) {
       console.error('Error:', error);
     }
-  };
+  }, []);
 
   // Fetch run history from Supabase
-  const fetchRunHistory = async () => {
+  const fetchRunHistory = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('AGA Runs progress')
@@ -70,12 +70,12 @@ export function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchClientMetrics();
     fetchRunHistory();
-  }, []);
+  }, [fetchClientMetrics, fetchRunHistory]);
 
   // Set up real-time subscription for run updates
   useEffect(() => {
@@ -91,6 +91,7 @@ export function Dashboard() {
         (payload) => {
           console.log('Run update received:', payload);
           fetchRunHistory(); // Refetch all runs when any update occurs
+          fetchClientMetrics(); // Also refetch metrics when runs update
         }
       )
       .subscribe();
@@ -98,7 +99,7 @@ export function Dashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchRunHistory, fetchClientMetrics]);
 
 
   const getStatusIcon = (status: string) => {
