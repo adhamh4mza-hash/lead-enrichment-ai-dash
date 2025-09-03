@@ -1,14 +1,21 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { LeadEnrichmentForm } from '@/components/LeadEnrichmentForm';
+import { Dashboard } from '@/components/Dashboard';
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [submissionData, setSubmissionData] = useState(null);
+
+  const handleSubmissionSuccess = (data: any) => {
+    setSubmissionData(data);
+    setShowDashboard(true);
+  };
+
+  if (showDashboard) {
+    return <Dashboard submissionData={submissionData} />;
+  }
+
+  return <LeadEnrichmentForm onSubmissionSuccess={handleSubmissionSuccess} />;
 };
 
 export default Index;
