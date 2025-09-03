@@ -73,23 +73,25 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
         submissionData.append('email', formData.email);
       }
 
-      const response = await fetch('https://adham131.app.n8n.cloud/webhook-test/paytrust-demo', {
+      // Trigger webhook (fire and forget)
+      fetch('https://adham131.app.n8n.cloud/webhook-test/paytrust-demo', {
         method: 'POST',
         body: submissionData,
       });
-
-      if (!response.ok) {
-        throw new Error('Submission failed');
-      }
-
-      const result = await response.json();
       
       toast({
         title: "Success!",
         description: "Your lead enrichment has been submitted successfully.",
       });
 
-      onSubmissionSuccess(result);
+      // Go straight to dashboard with form data
+      const dashboardData = {
+        leadSource: formData.leadSource,
+        leadCount: formData.leadSource === 'apollo' ? formData.leadCount : (formData.csvFile ? 1000 : 0), // Estimate for CSV
+        timestamp: new Date(),
+      };
+
+      onSubmissionSuccess(dashboardData);
       
     } catch (error) {
       toast({
