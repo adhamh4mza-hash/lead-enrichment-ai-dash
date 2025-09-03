@@ -154,7 +154,7 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
         <Card className="p-8 bg-gradient-surface border-border shadow-elevated">
           <div className="mb-6">
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-              Lead Enrichment & Personalization
+              AI Growth Accelerator
             </h1>
             <p className="text-muted-foreground">
               Upload your leads and let our AI generate personalized messages that convert
