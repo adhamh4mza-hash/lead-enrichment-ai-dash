@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FormData {
   leadSource: 'apollo' | 'csv' | '';
@@ -51,9 +52,26 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
     setIsSubmitting(true);
 
     try {
+      // First, create a run record in Supabase
+      const { data: runData, error: runError } = await supabase
+        .from('AGA Runs progress')
+        .insert({
+          status: 'Processing Leads',
+          lead_count: formData.leadSource === 'apollo' ? formData.leadCount : null,
+          source: formData.leadSource === 'apollo' ? 'Apollo URL' : 'CSV Upload'
+        })
+        .select()
+        .single();
+
+      if (runError) {
+        throw new Error('Failed to create run record: ' + runError.message);
+      }
+
+      // Prepare form data for webhook with run_id
       const submissionData = new FormData();
       
       submissionData.append('leadSource', formData.leadSource);
+      submissionData.append('run_id', runData.run_id); // Add run_id to webhook payload
       
       if (formData.leadSource === 'apollo') {
         submissionData.append('apolloUrl', formData.apolloUrl);
@@ -84,19 +102,21 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
         description: "Your lead enrichment has been submitted successfully.",
       });
 
-      // Go straight to dashboard with form data
+      // Go straight to dashboard with run data
       const dashboardData = {
         leadSource: formData.leadSource,
         leadCount: formData.leadSource === 'apollo' ? formData.leadCount : (formData.csvFile ? 1000 : 0), // Estimate for CSV
+        run_id: runData.run_id,
         timestamp: new Date(),
       };
 
       onSubmissionSuccess(dashboardData);
       
     } catch (error) {
+      console.error('Submission error:', error);
       toast({
         title: "Error",
-        description: "Failed to submit form. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit form. Please try again.",
         variant: "destructive",
       });
     } finally {

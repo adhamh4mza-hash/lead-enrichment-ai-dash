@@ -9,10 +9,10 @@ interface DashboardProps {
 }
 
 interface RunHistory {
-  id: string;
-  status: 'completed' | 'processing' | 'failed';
-  timestamp: Date;
-  leadCount: number;
+  run_id: string;
+  status: string;
+  created_at: string;
+  lead_count: number | null;
   source: string;
 }
 
@@ -22,43 +22,12 @@ export function Dashboard({ submissionData }: DashboardProps) {
     hoursSaved: 0,
     moneySaved: 0,
   });
+  const [runHistory, setRunHistory] = useState<RunHistory[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const [runHistory, setRunHistory] = useState<RunHistory[]>([
-    {
-      id: '1',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      leadCount: 1500,
-      source: 'Apollo URL'
-    },
-    {
-      id: '2',
-      status: 'processing',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-      leadCount: 800,
-      source: 'CSV Upload'
-    },
-    {
-      id: '3',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      leadCount: 2200,
-      source: 'Apollo URL'
-    },
-    {
-      id: '4',
-      status: 'failed',
-      timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000), // 2 days ago
-      leadCount: 500,
-      source: 'CSV Upload'
-    }
-  ]);
 
   // Fetch data for 'mateusz' client from Supabase
   const fetchClientMetrics = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('Client Metrics')
         .select('num_personalized_leads,hours_saved,money_saved')
@@ -79,26 +48,65 @@ export function Dashboard({ submissionData }: DashboardProps) {
       }
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  // Fetch run history from Supabase
+  const fetchRunHistory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('AGA Runs progress')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        console.error('Error fetching run history:', error);
+        return;
+      }
+
+      if (data) {
+        setRunHistory(data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchClientMetrics();
+    fetchRunHistory();
+  }, []);
+
+  // Set up real-time subscription for run updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('run-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'AGA Runs progress'
+        },
+        (payload) => {
+          console.log('Run update received:', payload);
+          fetchRunHistory(); // Refetch all runs when any update occurs
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
     if (submissionData) {
-      // Optionally add a new run entry for UI context; metrics come from DB
-      const newRun: RunHistory = {
-        id: Date.now().toString(),
-        status: 'processing',
-        timestamp: new Date(),
-        leadCount: submissionData.leadCount || 0,
-        source: submissionData.leadSource === 'apollo' ? 'Apollo URL' : 'CSV Upload'
-      };
-      setRunHistory(prev => [newRun, ...prev]);
-      // Re-fetch metrics to ensure we always show what's in the DB
+      // Just refresh the run history to show the new run
+      fetchRunHistory();
       fetchClientMetrics();
     }
   }, [submissionData]);
@@ -227,7 +235,7 @@ export function Dashboard({ submissionData }: DashboardProps) {
             <div className="space-y-3 sm:space-y-4">
               {runHistory.map((run) => (
                 <div 
-                  key={run.id} 
+                  key={run.run_id} 
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg bg-muted/30 border border-border/50 gap-3 sm:gap-4"
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
@@ -235,13 +243,13 @@ export function Dashboard({ submissionData }: DashboardProps) {
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className="font-medium text-foreground text-sm sm:text-base">
-                          {run.leadCount.toLocaleString()} leads
+                          {run.lead_count ? run.lead_count.toLocaleString() : '0'} leads
                         </span>
                         <span className="text-muted-foreground">•</span>
                         <span className="text-xs sm:text-sm text-muted-foreground">{run.source}</span>
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">
-                        {formatTimeAgo(run.timestamp)}
+                        {formatTimeAgo(new Date(run.created_at))}
                       </div>
                     </div>
                   </div>

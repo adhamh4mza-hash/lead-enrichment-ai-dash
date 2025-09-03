@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      "AGA Runs progress": {
+        Row: {
+          created_at: string
+          lead_count: number | null
+          run_id: string
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          lead_count?: number | null
+          run_id?: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          lead_count?: number | null
+          run_id?: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      "AGA Runs Progress": {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       "Client Metrics": {
         Row: {
           client_name: string
