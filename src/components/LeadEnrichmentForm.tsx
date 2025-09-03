@@ -143,19 +143,12 @@ export function LeadEnrichmentForm({ onSubmissionSuccess }: LeadEnrichmentFormPr
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Logo */}
-        <div className="mb-8">
-          <p 
-            className="framer-text" 
-            style={{
-              fontFamily: '"Clash Display", "Clash Display Placeholder", sans-serif',
-              fontSize: '30px',
-              fontWeight: 700,
-              textAlign: 'center',
-              color: 'var(--extracted-r6o4lv, rgb(171, 82, 197))'
-            }}
-          >
-            13 AI
-          </p>
+        <div className="mb-8 flex justify-center">
+          <img 
+            src="/lovable-uploads/ffa4975b-0356-42f1-a7e4-654cbce74fe6.png" 
+            alt="PayTrust Group Logo" 
+            className="h-16 w-auto"
+          />
         </div>
 
         <Card className="p-8 bg-gradient-surface border-border shadow-elevated">

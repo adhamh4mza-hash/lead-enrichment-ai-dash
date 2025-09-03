@@ -175,17 +175,11 @@ export function Dashboard() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <p 
-                className="framer-text mb-2" 
-                style={{
-                  fontFamily: '"Clash Display", "Clash Display Placeholder", sans-serif',
-                  fontSize: 'clamp(20px, 4vw, 24px)',
-                  fontWeight: 700,
-                  color: 'var(--extracted-r6o4lv, rgb(171, 82, 197))'
-                }}
-              >
-                13 AI
-              </p>
+              <img 
+                src="/lovable-uploads/ffa4975b-0356-42f1-a7e4-654cbce74fe6.png" 
+                alt="PayTrust Group Logo" 
+                className="h-12 w-auto mb-4"
+              />
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Analytics Dashboard</h1>
               <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track your AI-powered growth acceleration</p>
             </div>
