@@ -61,7 +61,7 @@ export function Dashboard({ submissionData }: DashboardProps) {
       setLoading(true);
       const { data, error } = await supabase
         .from('Client Metrics')
-        .select('*')
+        .select('num_personalized_leads,hours_saved,money_saved')
         .eq('client_name', 'mateusz')
         .maybeSingle();
 
@@ -83,34 +83,13 @@ export function Dashboard({ submissionData }: DashboardProps) {
       setLoading(false);
     }
   };
-
-  // Update metrics in database
-  const updateClientMetrics = async (newStats: typeof stats) => {
-    try {
-      const { error } = await supabase
-        .from('Client Metrics')
-        .upsert({
-          client_name: 'mateusz',
-          num_personalized_leads: newStats.totalMessages,
-          hours_saved: newStats.hoursSaved,
-          money_saved: newStats.moneySaved,
-        });
-
-      if (error) {
-        console.error('Error updating client metrics:', error);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
   useEffect(() => {
     fetchClientMetrics();
   }, []);
 
   useEffect(() => {
     if (submissionData) {
-      // Add new run to history
+      // Optionally add a new run entry for UI context; metrics come from DB
       const newRun: RunHistory = {
         id: Date.now().toString(),
         status: 'processing',
@@ -118,20 +97,11 @@ export function Dashboard({ submissionData }: DashboardProps) {
         leadCount: submissionData.leadCount || 0,
         source: submissionData.leadSource === 'apollo' ? 'Apollo URL' : 'CSV Upload'
       };
-      
       setRunHistory(prev => [newRun, ...prev]);
-      
-      // Update stats and save to database
-      const newStats = {
-        totalMessages: stats.totalMessages + (submissionData.leadCount || 0),
-        hoursSaved: stats.hoursSaved + Math.floor((submissionData.leadCount || 0) / 10),
-        moneySaved: stats.moneySaved + Math.floor((submissionData.leadCount || 0) * 2.5)
-      };
-      
-      setStats(newStats);
-      updateClientMetrics(newStats);
+      // Re-fetch metrics to ensure we always show what's in the DB
+      fetchClientMetrics();
     }
-  }, [submissionData, stats.totalMessages, stats.hoursSaved, stats.moneySaved]);
+  }, [submissionData]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
